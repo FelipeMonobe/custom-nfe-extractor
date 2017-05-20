@@ -1,0 +1,19 @@
+{
+  "name": "justDoIt",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "glob": "^7.1.1",
+    "graceful-fs": "^4.1.11",
+    "pify": "^2.3.0",
+    "q": "^1.5.0",
+    "xml2js": "^0.4.17"
+  }
+}
