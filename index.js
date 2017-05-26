@@ -1,5 +1,7 @@
 const _parseString = require('xml2js').parseString
 const _readFile = require('graceful-fs').readFile
+const Spinner = require('cli-spinner').Spinner
+const inquirer = require('inquirer')
 const _glob = require('glob')
 const R = require('ramda')
 const Q = require('q')
@@ -9,7 +11,15 @@ const readFile = Q.denodeify(_readFile)
 const glob = Q.denodeify(_glob)
 
 const main = async () => {
-  const basePath = '/home/xinube/xmls/Cd\ XML\ HIDROGOOD'
+  const prompt = inquirer.createPromptModule()
+  const askRawBasePath = async () => prompt({ name: 'rawBasePath', message: 'Full base path to scan: ' })
+  const {rawBasePath} = await askRawBasePath()
+  const spinner = new Spinner('%s Scanning XMLs...')
+  
+  spinner.setSpinnerString(12)
+  spinner.start()
+  
+  const basePath = rawBasePath.trim().replace(/\s/, '\ ')
   const filesPattern = '**/*.xml'
   const filesPath = await glob(filesPattern, { cwd: basePath })
   const filesContent = await Q.all(filesPath.map(filePath =>
@@ -20,22 +30,29 @@ const main = async () => {
   }
   const xmls = await Q.allSettled(filesContent.map(fileContent =>
     parseString(fileContent, parserOptions)))
-
-
-const grouped = 
-    R.groupBy(x => Object.keys(x.value)[0],
-      xmls.filter(xml => xml.state == 'fulfilled')
-    )
-
-Object
-.keys(grouped)
-.forEach(k => grouped[k] = grouped[k].length)
-
-  console.log(
-grouped  
-
-
-/*    .filter(xml => !xml.value.hasOwnProperty('cteProc'))
+  const parsedXmls = xmls.filter(xml => xml.state == 'fulfilled')
+  const groupedByTypes = R.groupBy(x => Object.keys(x.value)[0], parsedXmls)
+  const types = Object.keys(groupedByTypes)
+  .map(t => `${t} (${groupedByTypes[t].length})`)
+  
+  spinner.stop()
+  
+  const askXmlType = async () => prompt({ type: 'list', name: 'type', message: 'Select XML type: ', choices: types })
+  const type = await askXmlType()
+  
+/*    
+  const deepPrint = (node, path = 'obj') => {
+    const recurseChildren = R.map(prop => {
+      if (typeof node[prop] !== 'object') return `${path}.${prop}`
+      return deepPrint(node[prop], `${path}.${prop}`)
+    })
+  
+    return R.pipe(R.keys, recurseChildren, R.flatten)(node)
+  }
+  const nfesProc = xmls
+    .filter(xml => xml.state == 'fulfilled')
+    .filter(xml => !xml.value.hasOwnProperty('NFe'))
+    .filter(xml => !xml.value.hasOwnProperty('cteProc'))
     .filter(xml => !xml.value.hasOwnProperty('procEventoNFe'))
     .filter(xml => !xml.value.hasOwnProperty('protNFe'))
     .filter(xml => !xml.value.hasOwnProperty('inutNFe'))
@@ -46,6 +63,10 @@ grouped
     .filter(xml => !xml.value.hasOwnProperty('procCancNFe'))
     .filter(xml => !xml.value.hasOwnProperty('procCancNF'))
 
+  deepPrint(nfesProc[0].value.nfeProc)
+*/  
+  
+/*    
     .map(xml => {    
       const product = xml.value.hasOwnProperty('NFe') ?
         Array.isArray(xml.value.NFe.infNFe.det) ? 
@@ -62,7 +83,6 @@ grouped
         descricao: product.xProd,
       }
     })*/
-    )
 }
 
 main()
