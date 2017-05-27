@@ -12,7 +12,7 @@ const glob = Q.denodeify(_glob)
 
 const main = async () => {
   const prompt = inquirer.createPromptModule()
-  const askRawBasePath = async () => prompt({ name: 'rawBasePath', message: 'Full base path to scan: ' })
+  const askRawBasePath = async () => prompt({ name: 'rawBasePath', message: 'Full base path to scan: ', default: '/home/amonobeax/Documentos/Profissional/Hidrogood/Cd XML HIDROGOOD' })
   const {rawBasePath} = await askRawBasePath()
   const spinner = new Spinner('%s Scanning XMLs...')
   
@@ -33,14 +33,13 @@ const main = async () => {
   const parsedXmls = xmls.filter(xml => xml.state == 'fulfilled')
   const groupedByTypes = R.groupBy(x => Object.keys(x.value)[0], parsedXmls)
   const types = Object.keys(groupedByTypes)
-  .map(t => `${t} (${groupedByTypes[t].length})`)
+  .map(t => ({ name: `${t} (${groupedByTypes[t].length})`, value: t }))
   
   spinner.stop()
   
   const askXmlType = async () => prompt({ type: 'list', name: 'type', message: 'Select XML type: ', choices: types })
   const type = await askXmlType()
   
-/*    
   const deepPrint = (node, path = 'obj') => {
     const recurseChildren = R.map(prop => {
       if (typeof node[prop] !== 'object') return `${path}.${prop}`
@@ -49,22 +48,11 @@ const main = async () => {
   
     return R.pipe(R.keys, recurseChildren, R.flatten)(node)
   }
-  const nfesProc = xmls
-    .filter(xml => xml.state == 'fulfilled')
-    .filter(xml => !xml.value.hasOwnProperty('NFe'))
-    .filter(xml => !xml.value.hasOwnProperty('cteProc'))
-    .filter(xml => !xml.value.hasOwnProperty('procEventoNFe'))
-    .filter(xml => !xml.value.hasOwnProperty('protNFe'))
-    .filter(xml => !xml.value.hasOwnProperty('inutNFe'))
-    .filter(xml => !xml.value.hasOwnProperty('retInutNFe'))
-    .filter(xml => !xml.value.hasOwnProperty('retConsReciNFe'))
-    .filter(xml => !xml.value.hasOwnProperty('nm:nfeProc'))
-    .filter(xml => !xml.value.hasOwnProperty('NFES'))
-    .filter(xml => !xml.value.hasOwnProperty('procCancNFe'))
-    .filter(xml => !xml.value.hasOwnProperty('procCancNF'))
-
-  deepPrint(nfesProc[0].value.nfeProc)
-*/  
+    
+  const chosenTypeXmls = parsedXmls
+    .filter(xml => xml.value.hasOwnProperty(type))
+  const xmlProps = deepPrint(chosenTypeXmls[0][type])
+  console.log(xmlProps)  
   
 /*    
     .map(xml => {    
