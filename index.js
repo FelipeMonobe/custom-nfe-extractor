@@ -1,3 +1,5 @@
+const { last, path } = require('ramda')
+
 const utilService = require('./src/util.service')
 const fileService = require('./src/file.service')
 const cliService = require('./src/cli.service')
@@ -11,17 +13,53 @@ const main = async () => {
 
   const rawXmls = await fileService.readXmlFrom(selectedPath)
   const xmls = await xmlService.parseToXml(rawXmls)
-  const xmlGroupedByTypes = utilService.groupByTypes(xmls)
-  const typesKeys = keys(xmlGroupedByTypes)
-  const types = map(t => ({ name: `${t} (${xmlGroupedByTypes[t].length})`, value: t }), typesKeys)
+  const xmlsGroupedByTypes = utilService.groupByTypes(xmls)
+  const typesKeys = keys(xmlsGroupedByTypes)
+  const types = map(t => ({ name: `${t} (${xmlsGroupedByTypes[t].length})`, value: t }), typesKeys)
 
   cliService.toggleSpinner()
 
   const { selectedType } = await cliService.askXmlType(types)
-  const xmlFilteredByType = utilService.filterByXmlType(selectedType)(xmls)
-  const sampleXml = xmlFilteredByType[0].value[selectedType]
+  const xmlsFilteredByType = utilService.filterByXmlType(selectedType)(xmls)
+  const sampleXml = xmlsFilteredByType[0].value[selectedType]
   const xmlProps = utilService.getDeepProps(sampleXml, selectedType)
   const { selectedProps } = await cliService.askXmlProps(xmlProps)
+  const { willProcess } = await cliService.askProcessing()
+
+  ///////////////////////////// REFACTOR /////////////////////////////
+  //////////////////////////// CONSOLIDATE ///////////////////////////
+  const numberPattern = /^[\d.]+$/
+  const treatedXmls = xmlsFilteredByType.map(xml => {
+    const body = {}
+
+    selectedProps.forEach(propPath => {
+      const pathSegments = propPath.split('.')
+      const prop = last(pathSegments)
+      const rawValue = path(pathSegments, xml.value)
+      const value = !!rawValue ? rawValue.trim() : ''
+
+      body[prop] = numberPattern.test(value) && value.length < 13 ?
+        parseFloat(value) :
+        value
+    })
+    return body
+})
+const result = { list: treatedXmls }
+if (willProcess) {
+const { selectedConsolidatees } = await cliService.askConsolidate(selectedProps)
+const resultProps = selectedConsolidatees.map((consolidatee) => last(consolidatee.split('.')))
+
+resultProps
+.forEach(resultProp => {
+  result[`${resultProp}Consolidado`] = treatedXmls.reduce((acc, curr) => {
+      const value = curr[resultProp] || 0
+      return acc + value
+    }, 0)
+})
+}
+
+console.log(result)
+///////////////////////////////////////////////////////////////////////////////
 }
 
 main()
