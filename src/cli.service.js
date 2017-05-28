@@ -18,7 +18,12 @@ const _prompt = inquirer.createPromptModule()
 const askPath = () => _prompt({
   name: 'selectedPath',
   message: 'Path to scan: ',
-  default: '/home/amonobeax/Documentos/Profissional/Hidrogood/Cd XML HIDROGOOD',
+  default: '/home/xinube/xmls',
+})
+const askGlob = () => _prompt({
+  name: 'selectedGlob',
+  message: 'Glob pattern: ',
+  default: '**/*.xml',
 })
 const askXmlType = (types) => _prompt({
   name: 'selectedType',
@@ -49,6 +54,7 @@ const askConsolidate = (selectedProps) => _prompt({
 
 module.exports = {
   askPath,
+  askGlob,
   askXmlType,
   askXmlProps,
   askProcessing,

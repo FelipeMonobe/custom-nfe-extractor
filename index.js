@@ -8,10 +8,11 @@ const { keys, map } = require('ramda')
 
 const main = async () => {
   const { selectedPath } = await cliService.askPath()
+  const { selectedGlob } = await cliService.askGlob()
 
   cliService.toggleSpinner()
 
-  const rawXmls = await fileService.readXmlFrom(selectedPath)
+  const rawXmls = await fileService.readXmlFrom(selectedPath, selectedGlob)
   const xmls = await xmlService.parseToXml(rawXmls)
   const xmlsGroupedByTypes = utilService.groupByTypes(xmls)
   const typesKeys = keys(xmlsGroupedByTypes)
