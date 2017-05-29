@@ -1,9 +1,10 @@
-const _readFile = require('graceful-fs').readFile
+const fs = require('graceful-fs')
 const { map } = require('ramda')
 const _glob = require('glob')
 const Q = require('q')
 
-const readFile = Q.denodeify(_readFile)
+const writeFile = Q.denodeify(fs.writeFile)
+const readFile = Q.denodeify(fs.readFile)
 const glob = Q.denodeify(_glob)
 
 const _getXmlPaths = (cwd, selectedGlob) => glob(selectedGlob, { cwd })
@@ -13,9 +14,15 @@ const _readXmlContent = (cwd, xmlPaths) => Q
 const readXmlFrom = async (rootPath, selectedGlob) => {
   const cwd = rootPath.trim().replace(/\s/, '\ ')
   const xmlPaths = await _getXmlPaths(cwd, selectedGlob)
-  return await _readXmlContent(cwd, xmlPaths)
+  const xmlContent = await _readXmlContent(cwd, xmlPaths)
+  return xmlContent
+}
+
+const saveXlsx = (fileName, savePath, xlsxBuffer) => {
+  return writeFile(fileName, xlsxBuffer)
 }
 
 module.exports = {
   readXmlFrom,
+  saveXlsx
 }

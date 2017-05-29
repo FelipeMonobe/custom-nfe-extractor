@@ -1,4 +1,4 @@
-const { filter, flatten, groupBy, keys, map, pipe, reduce } = require('ramda')
+const { filter, flatten, groupBy, keys, map, pipe } = require('ramda')
 
 const groupByTypes = groupBy(x => keys(x.value)[0])
 const filterByXmlType = type => filter(x => x.value.hasOwnProperty(type))
@@ -14,5 +14,5 @@ const getDeepProps = (node, path = 'obj') => {
 module.exports = {
   filterByXmlType,
   getDeepProps,
-  groupByTypes,
+  groupByTypes
 }

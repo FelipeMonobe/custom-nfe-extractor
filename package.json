@@ -4,9 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "flow-remove-types -p ./ -d build/ -i node_modules",
     "debug": "node --inspect-brk index.js",
+    "flow": "flow",
+    "flow:coverage": "flow coverage",
+    "flow:install": "flow-typed install",
     "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha app/**/*.spec.js"
   },
   "keywords": [],
   "author": "",
@@ -16,9 +20,26 @@
     "glob": "^7.1.1",
     "graceful-fs": "^4.1.11",
     "inquirer": "^3.0.6",
+    "node-xlsx": "^0.7.4",
     "pify": "^2.3.0",
     "q": "^1.5.0",
     "ramda": "^0.23.0",
     "xml2js": "^0.4.17"
+  },
+  "devDependencies": {
+    "babel-eslint": "^7.2.3",
+    "chai": "^4.0.0",
+    "chai-as-promised": "^6.0.0",
+    "eslint": "^3.19.0",
+    "eslint-config-standard": "^10.2.1",
+    "eslint-plugin-flowtype": "^2.33.0",
+    "eslint-plugin-import": "^2.3.0",
+    "eslint-plugin-node": "^4.2.2",
+    "eslint-plugin-promise": "^3.5.0",
+    "eslint-plugin-standard": "^3.0.1",
+    "flow-bin": "^0.47.0",
+    "flow-remove-types": "^1.2.1",
+    "flow-typed": "^2.1.2",
+    "mocha": "^3.4.2"
   }
 }

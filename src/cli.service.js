@@ -18,26 +18,26 @@ const _prompt = inquirer.createPromptModule()
 const askPath = () => _prompt({
   name: 'selectedPath',
   message: 'Path to scan: ',
-  default: '/home/xinube/xmls',
+  default: '/home/xinube/xmls'
 })
 const askGlob = () => _prompt({
   name: 'selectedGlob',
   message: 'Glob pattern: ',
-  default: '**/*.xml',
+  default: '**/*.xml'
 })
 const askXmlType = (types) => _prompt({
   name: 'selectedType',
   type: 'list',
   message: 'XML types: ',
   pageSize,
-  choices: types,
+  choices: types
 })
 const askXmlProps = (xmlProps) => _prompt({
   name: 'selectedProps',
   type: 'checkbox',
   message: 'XML properties: ',
   pageSize,
-  choices: xmlProps,
+  choices: xmlProps
 })
 const askProcessing = () => _prompt({
   name: 'willProcess',
@@ -59,5 +59,5 @@ module.exports = {
   askXmlProps,
   askProcessing,
   askConsolidate,
-  toggleSpinner,
+  toggleSpinner
 }

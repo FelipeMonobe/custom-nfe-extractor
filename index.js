@@ -1,10 +1,9 @@
-const { last, path } = require('ramda')
-
+const { keys, map, last, path, values } = require('ramda')
 const utilService = require('./src/util.service')
 const fileService = require('./src/file.service')
+const xlsxService = require('./src/xlsx.service')
 const cliService = require('./src/cli.service')
 const xmlService = require('./src/xml.service')
-const { keys, map } = require('ramda')
 
 const main = async () => {
   const { selectedPath } = await cliService.askPath()
@@ -27,8 +26,8 @@ const main = async () => {
   const { selectedProps } = await cliService.askXmlProps(xmlProps)
   const { willProcess } = await cliService.askProcessing()
 
-  ///////////////////////////// REFACTOR /////////////////////////////
-  //////////////////////////// CONSOLIDATE ///////////////////////////
+  // /////////////////////////// REFACTOR /////////////////////////////
+  // ////////////////////////// CONSOLIDATE ///////////////////////////
   const numberPattern = /^[\d.]+$/
   const treatedXmls = xmlsFilteredByType.map(xml => {
     const body = {}
@@ -37,30 +36,33 @@ const main = async () => {
       const pathSegments = propPath.split('.')
       const prop = last(pathSegments)
       const rawValue = path(pathSegments, xml.value)
-      const value = !!rawValue ? rawValue.trim() : ''
+      const value = rawValue ? rawValue.trim() : ''
 
-      body[prop] = numberPattern.test(value) && value.length < 13 ?
-        parseFloat(value) :
-        value
+      body[prop] = numberPattern.test(value) && value.length < 13
+      ? parseFloat(value)
+      : value
     })
     return body
-})
-const result = { list: treatedXmls }
-if (willProcess) {
-const { selectedConsolidatees } = await cliService.askConsolidate(selectedProps)
-const resultProps = selectedConsolidatees.map((consolidatee) => last(consolidatee.split('.')))
+  })
+  const result = { list: treatedXmls }
+  if (willProcess) {
+    const { selectedConsolidatees } = await cliService.askConsolidate(selectedProps)
+    const resultProps = selectedConsolidatees.map((consolidatee) => last(consolidatee.split('.')))
 
-resultProps
-.forEach(resultProp => {
-  result[`${resultProp}Consolidado`] = treatedXmls.reduce((acc, curr) => {
-      const value = curr[resultProp] || 0
-      return acc + value
-    }, 0)
-})
-}
+    resultProps
+      .forEach(resultProp => {
+        result[`${resultProp}Consolidado`] = treatedXmls.reduce((acc, curr) => {
+          const value = curr[resultProp] || 0
+          return acc + value
+        }, 0)
+      })
+  }
 
-console.log(result)
-///////////////////////////////////////////////////////////////////////////////
+  const xlsxHeader = selectedProps.map(x => last(x.split('.')))
+  const xlsxBody = result.list.map(i => values(i))
+  const xlsxBuffer = xlsxService.buildXlsx('output.xlsx', xlsxHeader, xlsxBody)
+  fileService.saveXlsx('output.xlsx', '/home/xinube', xlsxBuffer)
+  // ////////////////////////////////////////////////////////////////////////////
 }
 
 main()

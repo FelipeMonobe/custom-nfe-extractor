@@ -15,5 +15,5 @@ const parseToXml = async (content) => {
 }
 
 module.exports = {
-  parseToXml,
+  parseToXml
 }
